@@ -56,7 +56,7 @@ export def --env rename-pdf [
     let to_rename = $in
     |par-each {|pdf_file| 
     let meta = exiftool -j $pdf_file | from json
-    let author_query = $meta | get -i Author 
+    let author_query = $meta | get --optional Author 
     let author_last = match ($author_query|compact -e | describe) {
         "list<string>" => ( $author_query | split words | $in.0.1)
         "list<any> (stream)" => null
