@@ -1,10 +1,10 @@
-{ pkgs, fetchFromGitHub, ... }:
+{ pkgs, lib, ... }:
 {
   programs.nushell = {
     package = pkgs.nushell.overrideAttrs (_:
       rec {
         version = "0.110.0";
-        src = fetchFromGitHub {
+        src = lib.fetchFromGitHub {
           owner = "nushell";
           repo = "nushell";
           tag = version;
