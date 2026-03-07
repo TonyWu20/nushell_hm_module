@@ -3,7 +3,7 @@
   programs.nushell = {
     enable = true;
     plugins = with pkgs; [
-      nushellPlugins.skim
+      #nushellPlugins.skim
       nushellPlugins.polars
       nushellPlugins.polars
       nushellPlugins.highlight
