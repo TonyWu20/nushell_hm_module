@@ -1,9 +1,10 @@
 { pkgs, ... }:
 {
   programs.nushell = {
+    package = pkgs.nushell_0_110_0;
     enable = true;
     plugins = with pkgs; [
-      #nushellPlugins.skim
+      nushellPlugins.skim
       nushellPlugins.polars
       nushellPlugins.polars
       nushellPlugins.highlight
