@@ -1,7 +1,10 @@
 { pkgs, ... }:
 {
   programs.nushell = {
-    package = pkgs.nushell_0_110_0;
+    package = pkgs.nushell.overrideAttrs (_:
+      {
+        version = "0.110.0";
+      });
     enable = true;
     plugins = with pkgs; [
       nushellPlugins.skim
