@@ -23,6 +23,13 @@ export def castep-param-keywords-links [
     | query webpage-info 
     | get links
     | slice ($slice_range|default 0..)
+    | enumerate
+    | flatten
+}
+
+# Get the urls and extract the documentation
+export def castep-param-doc-collect []: table -> table {
+    $in
     | update url {|row| 
         [
             "https://www.tcm.phy.cam.ac.uk/castep/documentation/WebHelp/content/modules/castep/keywords/"
@@ -30,11 +37,8 @@ export def castep-param-keywords-links [
         ]
         | str join
     } 
-}
-
-# Get the urls and extract the documentation
-export def castep-param-doc-collect []: table -> table {
-    $in|get url|par-each {|it| http get $it| grab-castep-doc }
+    | get url
+    | par-each {|it| http get $it| grab-castep-doc }
 }
 
 # Retrieve pages of `CASTEP` keyword documentations into text
@@ -55,6 +59,40 @@ string -> string # the code is passed from pipeline
     | lines
     | prepend $"mod ($module_name) {"
     | append "}"
-    | append $"\npub use ($module_name)::($module_name|str pascal-case);"
+    | to text
+}
+
+# collect generated code snippets from `qwen3-coder`
+export def 'castep collect-codes' []: string -> table {
+    $in
+    | split row "```"
+    | find -n 'rust'
+    | str replace --all -m 'rust\n// File:.*\n' ''
+    | each { [[mod_code];[$in]]}
+    | flatten
+}
+
+# collect module name from result of `castep-param-keywords-links`
+export def 'castep collect-mod-names' []: table -> table {
+    $in
+    | select text
+    | update text {$in |str downcase}
+    | rename mod_name
+}
+
+# Merge two tables, and wrap the code snippets to a real working rust module
+# | mod_name | mod_code |
+# | -------- | -------- |
+# | ...      | ...      |
+export def 'castep to-mod' [mod_name: table, mod_code: table]: nothing -> string {
+    $mod_name
+    | merge $mod_code
+    | do {
+        let table = $in
+        let modules = $table | each {|row| $row.mod_code | to-rust-mod $row.mod_name}
+        let exports = $mod_name | each {|row| $"pub use ($row.mod_name)::($row.mod_name|str pascal-case);"}
+        $modules 
+        | append $exports
+    }
     | to text
 }
