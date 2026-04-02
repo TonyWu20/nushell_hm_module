@@ -83,6 +83,7 @@
 
           $env.config = $current
           source ~/.zoxide.nu
+          use std/clip
         ''
       ];
       settings = {
