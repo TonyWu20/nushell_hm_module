@@ -9,22 +9,27 @@
   };
   config = {
     programs.nushell = {
-      package = pkgs.nushell.overrideDerivation (oldAttrs:
-        rec {
-          version = "0.110.0";
-          src = pkgs.fetchFromGitHub {
-            owner = "nushell";
-            repo = "nushell";
-            tag = version;
-            hash = "sha256-iytTJZ70kg2Huwj/BSwDX4h9DVDTlJR2gEHAB2pGn/k=";
-          };
-        });
+      package = pkgs.nushell;
       enable = true;
       plugins = with pkgs; [
         nushellPlugins.skim
         nushellPlugins.polars
-        nushellPlugins.polars
-        nushellPlugins.highlight
+        (nushellPlugins.highlight.overrideAttrs
+          (old: rec{
+            version = "1.4.13+0.111.0";
+            src = pkgs.fetchFromGitHub {
+              owner = "cptpiepmatz";
+              repo = "nu-plugin-highlight";
+              tag = "v1.4.13+0.111.0";
+              hash = "sha256-vPQgg5A7e+S9SzgscicmcwLhvusWT9+5GoTImiW0pQ4=";
+              fetchSubmodules = true;
+            };
+            cargoDeps = rustPlatform.fetchCargoVendor {
+              inherit src;
+              hash = "sha256-56u6Yaz5YZNJTXYlb3xZiaGYB5Lte2pPIHX7TmhXPrU=";
+            };
+          }
+          ))
         nushellPlugins.gstat
         nushellPlugins.query
       ] ++ config.extraPlugins;
@@ -67,6 +72,14 @@
           $current.completions.external = ($current.completions.external
           | default true enable
           | default { $carapace_completer } completer)
+
+          $env.YUNWU_TOKEN = (open ${config.sops.secrets.yunwu_claude_api.path})
+          $env.POE_TOKEN = (open ${config.sops.secrets.poe_chatbot_api.path})
+          $env.POE_BASE_URL = "https://api.poe.com"
+          $env.YUNWU_BASE_URL = "https://yunwu.ai"
+          $env.ANTHROPIC_API_KEY = ""
+          $env.ANTHROPIC_AUTH_TOKEN = $env.YUNWU_TOKEN
+          $env.ANTHROPIC_BASE_URL = $env.YUNWU_BASE_URL
 
           $env.config = $current
           source ~/.zoxide.nu
