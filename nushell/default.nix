@@ -19,22 +19,7 @@
       plugins = with pkgs; [
         nushellPlugins.skim
         nushellPlugins.polars
-        (nushellPlugins.highlight.overrideAttrs
-          (old: rec{
-            version = "1.4.13+0.111.0";
-            src = pkgs.fetchFromGitHub {
-              owner = "cptpiepmatz";
-              repo = "nu-plugin-highlight";
-              tag = "v1.4.13+0.111.0";
-              hash = "sha256-vPQgg5A7e+S9SzgscicmcwLhvusWT9+5GoTImiW0pQ4=";
-              fetchSubmodules = true;
-            };
-            cargoDeps = rustPlatform.fetchCargoVendor {
-              inherit src;
-              hash = "sha256-56u6Yaz5YZNJTXYlb3xZiaGYB5Lte2pPIHX7TmhXPrU=";
-            };
-          }
-          ))
+        nushellPlugins.highlight
         nushellPlugins.gstat
         nushellPlugins.query
       ] ++ config.extraPlugins;
